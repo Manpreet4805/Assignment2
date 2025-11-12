@@ -1,35 +1,32 @@
 /********************************************************************************
 * WEB322 – Assignment 02
 *
-* I declare that this assignment is my own work in accordance with Seneca's
-* Academic Integrity Policy:
-*
-* https://www.senecapolytechnic.ca/about/policies/academic-integrity-policy.html
-*
 * Name: Manpreet Singh
 * Student ID: 190709238
 * Date: 12 November, 2025
 *
 ********************************************************************************/
-const express = require("express")
-const path = require("path")
-const projectData = require("./modules/projects")
 
-const app = express()
-const HTTP_PORT = process.env.PORT || 7800
+const express = require("express");
+const path = require("path");
+const projectData = require("./modules/projects");
 
-app.set("view engine", "ejs")
-app.set("views", __dirname + "/views")
-app.use(express.static("public"))
+const app = express();
 
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
+
+// Home and About pages
 app.get("/", (req, res) => {
-  res.render("home", { page: "/" })
-})
+  res.render("home", { page: "/" });
+});
 
 app.get("/about", (req, res) => {
-  res.render("about", { page: "/about" })
-})
+  res.render("about", { page: "/about" });
+});
 
+// Projects listing
 app.get("/solutions/projects", (req, res) => {
   const sector = req.query.sector;
   if (sector) {
@@ -49,7 +46,7 @@ app.get("/solutions/projects", (req, res) => {
   }
 });
 
-
+// Project detail
 app.get("/solutions/projects/:id", (req, res) => {
   const id = req.params.id;
   projectData.getProjectById(id)
@@ -63,20 +60,14 @@ app.get("/solutions/projects/:id", (req, res) => {
     .catch(err => res.status(404).render("404", { message: err, page: "" }));
 });
 
+// 404 fallback
 app.use((req, res) => {
-  res.status(404).render("404", {
-    message: "Page not found",
-    page: "",
-  })
-})
+  res.status(404).render("404", { message: "Page not found", page: "" });
+});
 
-projectData
-  .initialize()
-  .then(() => {
-    app.listen(HTTP_PORT, () => {
-      console.log(`Server running on port ${HTTP_PORT}`)
-    })
-  })
-  .catch((err) => {
-    console.log("Failed to start server:", err)
-  })
+// Initialize projects and export app for Vercel
+projectData.initialize()
+  .then(() => console.log("Project data initialized"))
+  .catch(err => console.log("Failed to initialize project data:", err));
+
+module.exports = app;
